@@ -1,5 +1,6 @@
 // Advent of Code 2022
 // Day 04
+// Tools
 
 #include <algorithm>
 #include <iostream>
@@ -60,31 +61,53 @@ vector<vector<uint64_t>> GetPairsOfSections(const string& file_name)
     return data;
 }
 
-
-
-
-uint64_t CountOverlapsInPairsOfSections(const vector<vector<uint64_t>>& pairs)
+bool IsTotalOverlap(const vector<uint64_t>& pairs)
 {
-    static uint64_t begin_pair_1;
-    static uint64_t end_pair_1;
-    static uint64_t begin_pair_2;
-    static uint64_t end_pair_2;
+    uint64_t begin_pair_1{pairs.at(0)};
+    uint64_t end_pair_1{pairs.at(1)};
+    uint64_t begin_pair_2{pairs.at(2)};
+    uint64_t end_pair_2{pairs.at(3)};
 
+    if((begin_pair_2 >= begin_pair_1 && end_pair_2 <= end_pair_1) ||
+       (begin_pair_1 >= begin_pair_2 && end_pair_1 <= end_pair_2))
+    {
+        return true;
+    }
+    
+    return false;
+}
+
+bool IsPartialOverlap(const vector<uint64_t>& pairs)
+{
+    uint64_t begin_pair_1{pairs.at(0)};
+    uint64_t end_pair_1{pairs.at(1)};
+    uint64_t begin_pair_2{pairs.at(2)};
+    uint64_t end_pair_2{pairs.at(3)};
+
+    if((begin_pair_2 >= begin_pair_1 && begin_pair_2 <= end_pair_1) ||
+           (end_pair_2 >= begin_pair_1 && end_pair_2 <= end_pair_1) ||
+           (begin_pair_1 >= begin_pair_2 && begin_pair_1 <= end_pair_2) ||
+           (end_pair_1 >= begin_pair_2 && end_pair_1 <= end_pair_2))
+    {
+        return true;
+    }
+    
+    return false;
+}
+
+uint64_t CountOverlapsInPairsOfSections(const vector<vector<uint64_t>>& pairs, const bool is_partial_overlap)
+{
     uint64_t overlap_counter{0};
 
     for(const auto& p : pairs)
     {
-        begin_pair_1 = p.at(0);
-        end_pair_1 = p.at(1);
-        begin_pair_2 = p.at(2);
-        end_pair_2 = p.at(3);
-
-        if((begin_pair_2 >= begin_pair_1 && end_pair_2 <= end_pair_1) ||
-           (begin_pair_1 >= begin_pair_2 && end_pair_1 <= end_pair_2))
+        if([&](){if(is_partial_overlap == true){return IsPartialOverlap(p);} else{return IsTotalOverlap(p);}}())
         {
             if (DEBUG_FLAG)
             {
-                printf("Overlaped pair: %d-%d | %d-%d\n", begin_pair_1, end_pair_1, begin_pair_2, end_pair_2);
+                is_partial_overlap ? printf("Partial") : printf("Total");
+                printf(" overlaped pairs: %d-%d | %d-%d\n", p.at(0), p.at(1),
+                p.at(2), p.at(3));
             }
             
             ++overlap_counter;
